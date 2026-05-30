@@ -3,236 +3,482 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game PAUD: Pahlawan Cilik Pemilah Sampah</title>
+    <title>Pahlawan Cilik Pemilah Sampah</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { margin: 0; padding: 0; background: #eefff0; color: #2d5a27; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        #game-container { width: 100%; max-width: 800px; height: 600px; background: white; border: 8px solid #4caf50; border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
-        .screen { display: none; width: 100%; height: 100%; padding: 30px; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: absolute; top:0; left:0; background-size: cover; background-position: center; }
+        * { box-sizing: border-box; font-family: 'Comic Sans MS', 'Chalkboard SE', 'Casual', sans-serif; }
+        body { margin: 0; padding: 0; background: #eef9f1; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        #game-box { width: 100%; max-width: 850px; height: 650px; background: #ffffff; border: 10px solid #4caf50; border-radius: 30px; overflow: hidden; position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .screen { display: none; width: 100%; height: 100%; padding: 25px; flex-direction: column; align-items: center; justify-content: space-between; position: absolute; top:0; left:0; background: linear-gradient(to bottom, #e3f2fd, #ffffff); }
         .active { display: flex; }
         
-        /* Tema Warna Alam */
-        h1 { color: #2e7d32; margin-top: 0; font-size: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        p { font-size: 1.1rem; line-height: 1.5; color: #3e2723; }
-        .btn { background: #4caf50; color: white; border: none; padding: 15px 35px; font-size: 1.2rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 5px #2e7d32; transition: 0.2s; margin-top: 15px; }
-        .btn:hover { background: #45a049; }
-        .btn:active { box-shadow: 0 2px #2e7d32; transform: translateY(3px); }
+        /* Typography & Buttons */
+        h1 { color: #1b5e20; margin: 5px 0; font-size: 2.2rem; text-align: center; text-shadow: 2px 2px #c8e6c9; }
+        h2 { color: #2e7d32; margin: 5px 0; font-size: 1.6rem; }
+        p { font-size: 1.15rem; color: #37474f; text-align: center; margin: 5px 0; font-weight: bold; }
+        .btn-start { background: #ff9800; color: white; border: none; padding: 15px 40px; font-size: 1.4rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 6px #e65100; transition: 0.1s; margin-bottom: 10px; }
+        .btn-start:active { transform: translateY(4px); box-shadow: 0 2px #e65100; }
+        .btn-action { background: #4caf50; color: white; border: none; padding: 12px 30px; font-size: 1.2rem; font-weight: bold; border-radius: 20px; cursor: pointer; box-shadow: 0 4px #2e7d32; margin: 5px; }
+        .btn-action:active { transform: translateY(2px); box-shadow: 0 2px #2e7d32; }
         
-        /* Form & Aturan */
-        .form-group { margin: 15px 0; width: 80%; max-width: 300px; text-align: left; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 10px; border: 2px solid #a5d6a7; border-radius: 10px; font-size: 1rem; }
-        .rules-box { background: #f1f8e9; border: 2px dashed #81c784; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: left; font-size: 0.95rem; }
+        /* HUD / Status Bar */
+        .hud-bar { width: 100%; background: #c8e6c9; padding: 10px 20px; border-radius: 15px; display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; color: #1b5e20; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
         
-        /* Area Permainan */
-        .game-area { width: 100%; height: 350px; background: #e8f5e9; border: 3px solid #c8e6c9; border-radius: 15px; position: relative; margin: 15px 0; overflow: hidden; }
-        .trash-item { width: 60px; height: 60px; position: absolute; cursor: pointer; transition: transform 0.1s; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; }
-        .trash-item:hover { transform: scale(1.1); }
-        .hud { width: 100%; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; background: #c8e6c9; padding: 10px 20px; border-radius: 10px; }
+        /* Form Input */
+        .input-container { background: white; padding: 15px; border-radius: 20px; border: 3px solid #81c784; width: 80%; max-width: 350px; display: flex; flex-direction: column; gap: 10px; }
+        .input-container input, .input-container select { width: 100%; padding: 10px; border: 2px solid #a5d6a7; border-radius: 10px; font-size: 1rem; text-align: center; font-weight: bold; }
         
-        /* Reward & Feedback */
-        .feedback-pop { background: rgba(255,255,255,0.95); border: 3px solid #ffca28; padding: 15px; border-radius: 15px; position: absolute; top: 40%; width: 80%; display: none; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .reward-display { font-size: 4rem; animation: bounce 1s infinite alternate; cursor: pointer; margin: 20px 0; }
-        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+        /* Rules & Reflection Box */
+        .info-card { background: #fff9c4; border: 3px dashed #fbc02d; padding: 12px; border-radius: 15px; width: 90%; max-width: 550px; font-size: 0.95rem; text-align: left; color: #f57f17; }
         
-        /* Bins Level 3 */
-        .bins-container { display: flex; justify-content: space-around; width: 100%; margin-top: 50px; }
-        .bin { width: 100px; height: 130px; border-radius: 10px 10px 5px 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 0.9rem; padding: 5px; }
-        .bin-green { background: #2e7d32; border: 3px solid #1b5e20; }
-        .bin-blue { background: #1565c0; border: 3px solid #0d47a1; }
-        .bin-yellow { background: #f57f17; border: 3px solid #f57f17; }
+        /* Game Playgrounds */
+        .play-zone { width: 100%; height: 360px; background: #f1f8e9; border: 4px dashed #a5d6a7; border-radius: 20px; position: relative; margin: 10px 0; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .interactive-item { font-size: 3.5rem; position: absolute; cursor: pointer; transition: transform 0.2s; user-select: none; }
+        .interactive-item:hover { transform: scale(1.2); }
+        
+        /* Level 2 & 3 Specifics */
+        .options-grid { display: flex; gap: 15px; margin-top: 20px; }
+        .bin-container { display: flex; justify-content: space-around; width: 100%; align-items: flex-end; height: 100%; padding-bottom: 20px; }
+        .game-bin { width: 120px; height: 160px; border-radius: 15px 15px 5px 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 6px rgba(0,0,0,0.1); text-align: center; padding: 5px; }
+        .bin-green { background: #2e7d32; border: 4px solid #1b5e20; }
+        .bin-blue { background: #1565c0; border: 4px solid #0d47a1; }
+        .bin-yellow { background: #e65100; border: 4px solid #bf360c; }
+        
+        /* Popups & Rewards */
+        .feedback-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; z-index: 100; text-align: center; }
+        .cloak-reward { font-size: 6rem; cursor: pointer; animation: floatAnim 1.5s infinite alternate; }
+        @keyframes floatAnim { from { transform: translateY(0); } to { transform: translateY(-15px); } }
+        
+        /* Leaderboard */
+        .leaderboard { width: 80%; max-width: 400px; background: #f5f5f5; border-radius: 15px; padding: 10px; margin: 10px 0; text-align: left; }
+        .leaderboard-row { display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 1px solid #ddd; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <!-- 1. HALAMAN DEPAN / HOME -->
-    <div id="screen-home" class="screen active">
+<div id="game-box">
+
+    <!-- AUDIO PLAYER MOCK INDICATOR -->
+    <div style="position: absolute; top: 5px; right: 10px; font-size: 0.8rem; color: #888; z-index: 10;">🎵 Musik Alam Aktif</div>
+
+    <!-- 1. HALAMAN DEPAN -->
+    <div id="scr-home" class="screen active">
         <h1>Pahlawan Cilik Pemilah Sampah 🌍</h1>
-        <p>🎵 <i>Musik Alam Riang Bermain...</i></p>
+        <p style="color: #2e7d32; font-style: italic;">Tema: Aku Sayang Bumi | Topik: Memilah Sampah</p>
         
-        <div class="form-group">
-            <label>Nama Pahlawan:</label>
-            <input type="text" id="player-name" placeholder="Tulis namamu di sini...">
-        </div>
-        <div class="form-group">
-            <label>Kelas:</label>
-            <select id="player-class">
+        <div class="input-container">
+            <input type="text" id="in-name" placeholder="Tulis Nama Kamu...">
+            <select id="in-class">
+                <option value="">Pilih Kelasmu...</option>
                 <option value="Kelompok B1">Kelompok B1</option>
                 <option value="Kelompok B2">Kelompok B2</option>
+                <option value="Kelompok B3">Kelompok B3</option>
             </select>
         </div>
         
-        <div class="rules-box">
-            <strong>Cara Bermain:</strong><br>
-            1. Cari dan ketuk sampah tersembunyi di Level 1.<br>
-            2. Kelompokkan jenis sampah di Level 2.<br>
-            3. Masukkan sampah ke rumah warna yang benar di Level 3!
+        <div class="info-card">
+            <strong>📋 Aturan Main:</strong><br>
+            1. Masukkan Nama & Kelasmu lalu klik MULAI.<br>
+            2. <b>Level 1:</b> Temukan dan ketuk jenis sampah yang diminta di halaman sekolah.<br>
+            3. <b>Level 2:</b> Kelompokkan sampah kelas dengan menekan tombol kategori yang tepat.<br>
+            4. <b>Level 3:</b> Ketuk sampah lalu masukkan ke Tong Warna yang sesuai di Bank Sampah.<br>
+            5. Kumpulkan Skor, Bintang, Jubah, Pedang, dan Diamond terbanyak!
         </div>
-        <button class="btn" onclick="startGame()">MULAI PETUALANGAN</button>
+        
+        <button class="btn-start" onclick="initGame()">MULAI</button>
     </div>
 
     <!-- 2. LEVEL 1: HALAMAN SEKOLAH -->
-    <div id="screen-lvl1" class="screen">
-        <div class="hud">
-            <span>Pahlawan: <span class="name-display"></span></span>
-            <span>Skor: <span id="score-l1">0</span></span>
-            <span>⭐: <span id="stars-l1">0</span></span>
+    <div id="scr-lvl1" class="screen">
+        <div class="hud-bar">
+            <span>Pahlawan: <span class="lbl-name"></span> (<span class="lbl-class"></span>)</span>
+            <span>Skor: <span class="lbl-score">0</span></span>
+            <span>⭐: <span class="lbl-stars">0</span></span>
         </div>
-        <h3>Level 1: Bersihkan Halaman Sekolah! 🌳</h3>
-        <p>Misi: Cari dan ketuk <b>3 Botol Plastik Bekas</b> di bawah ini!</p>
-        <div class="game-area" id="area-l1">
-            <!-- Elemen Sampah akan di-generate via JS -->
-        </div>
-        <div id="feedback-l1" class="feedback-pop"></div>
-        <div id="reward-l1-box" style="display:none;">
-            <p>Hebat! Kamu mendapatkan hadiah pakaian pahlawan cilik!</p>
-            <div class="reward-display" onclick="nextLevel(2)">🧥</div>
-            <p><i>Klik Jubah untuk mengambil dan lanjut!</i></p>
+        <h2>Level 1: Berburu Sampah Halaman Sekolah 🌳</h2>
+        <p id="l1-question">Pertanyaan memuat...</p>
+        <div class="play-zone" id="l1-zone">
+            <!-- Items generated via JavaScript -->
         </div>
     </div>
 
-    <!-- 3. LEVEL 2: RUANG KELAS (Simulasi Konseptual) -->
-    <div id="screen-lvl2" class="screen">
-        <h3>Level 2: Pilah Sampah Ruang Kelas! 🏫</h3>
-        <p>Kelompokkan sampah makanan (Organik) dan plastik (Anorganik).</p>
-        <div class="game-area" style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
-            <p style="font-size: 1.5rem;">🍌 &nbsp; 📦 &nbsp; 🍂 &nbsp; 🥤</p>
-            <button class="btn" onclick="triggerLevel2Win()">Pilah Semua Sampah</button>
+    <!-- REWARD SCREEN LEVEL 1 -->
+    <div id="scr-rew1" class="screen" style="background: linear-gradient(to bottom, #fff9c4, #ffffff);">
+        <h1>Selamat Level 1 Selesai! 🎉</h1>
+        <p>Nalar berpikir komputasionalmu hebat! Kamu berhasil mengumpulkan skor dan bintang.</p>
+        <p style="color: #d32f2f; font-size: 1.3rem;">👇 Ayo Klik Jubah Pahlawanmu untuk Mengambilnya! 👇</p>
+        <div class="cloak-reward" onclick="goToLevel2()">🧥</div>
+        <p><i>Jubah Pahlawan Cilik Tingkat 1</i></p>
+    </div>
+
+    <!-- 3. LEVEL 2: RUANG KELAS -->
+    <div id="scr-lvl2" class="screen">
+        <div class="hud-bar">
+            <span>Pahlawan: <span class="lbl-name"></span></span>
+            <span>Skor: <span class="lbl-score">0</span></span>
+            <span>⭐: <span class="lbl-stars">0</span></span>
         </div>
-        <div id="reward-l2-box" style="display:none; text-align: center;">
-            <p>Luar Biasa! Jubah Pelindung Kedua Berhasil Didapatkan!</p>
-            <div class="reward-display" onclick="nextLevel(3)">✨🧥✨</div>
+        <h2>Level 2: Pilah Sampah Ruang Kelas 🏫</h2>
+        <p>Misi: Berpikir cepat! Masuk kategori manakah sampah di bawah ini?</p>
+        <div class="play-zone" id="l2-zone" style="flex-direction: column;">
+            <div id="l2-item-visual" style="font-size: 5rem; margin-bottom: 10px;"></div>
+            <h3 id="l2-item-name" style="color: #37474f; margin: 5px 0;"></h3>
+            <div class="options-grid">
+                <button class="btn-action" style="background:#2e7d32;" onclick="answerLevel2('Organik')">Organik (Dari Alam)</button>
+                <button class="btn-action" style="background:#1565c0;" onclick="answerLevel2('Anorganik')">Anorganik (Plastik/Kertas)</button>
+                <button class="btn-action" style="background:#c62828;" onclick="answerLevel2('Berbahaya')">Berbahaya (B3)</button>
+            </div>
         </div>
+    </div>
+
+    <!-- REWARD SCREEN LEVEL 2 -->
+    <div id="scr-rew2" class="screen" style="background: linear-gradient(to bottom, #e8f5e9, #ffffff);">
+        <h1>Luar Biasa, Level 2 Bersih! 🌟</h1>
+        <p>Kamu semakin pintar membedakan sifat dan jenis-jenis sampah di kelas.</p>
+        <p style="color: #d32f2f; font-size: 1.3rem;">👇 Klik Jubah Kedua untuk Menjadi Semakin Kuat! 👇</p>
+        <div class="cloak-reward" onclick="goToLevel3()">🔰🧥🔰</div>
+        <p><i>Jubah Pelindung Lingkungan Utama</i></p>
     </div>
 
     <!-- 4. LEVEL 3: BANK SAMPAH -->
-    <div id="screen-lvl3" class="screen">
-        <h3>Level 3: Rumah Warna Sampah 🏪</h3>
-        <p>Ketuk sampah di atas untuk masuk ke tong warna yang pas!</p>
-        <div class="game-area" id="area-l3">
-            <div class="trash-item" style="top:20px; left:45%;" id="active-trash" onclick="sortTrash('anorganik')">🥤</div>
+    <div id="scr-lvl3" class="screen">
+        <div class="hud-bar">
+            <span>Pahlawan: <span class="lbl-name"></span></span>
+            <span>Skor: <span class="lbl-score">0</span></span>
+            <span>⭐: <span class="lbl-stars">0</span></span>
+        </div>
+        <h2>Level 3: Pos Koordinasi Bank Sampah 🏪</h2>
+        <p>Misi: Klik jenis sampah di atas, lalu ketuk Rumah Tong Sampah Warna yang tepat!</p>
+        
+        <div class="play-zone" style="flex-direction: column; justify-content: space-between; padding: 10px;">
+            <div id="l3-current-trash" style="font-size: 4rem; height: 80px; display: flex; align-items: center; font-weight: bold;"></div>
+            <div id="l3-trash-text" style="font-weight: bold; color: #2e7d32;"></div>
             
-            <div class="bins-container">
-                <div class="bin bin-green">HIJAU<br>(Daun/Makanan)</div>
-                <div class="bin bin-blue">BIRU<br>(Plastik/Botol)</div>
-                <div class="bin bin-yellow">KUNING<br>(Berbahaya)</div>
+            <div class="bin-container">
+                <div class="game-bin bin-green" onclick="answerLevel3('Organik')">🟢<br>HIJAU<br>(Organik)</div>
+                <div class="game-bin bin-blue" onclick="answerLevel3('Anorganik')">🔵<br>BIRU<br>(Anorganik)</div>
+                <div class="game-bin bin-yellow" onclick="answerLevel3('Berbahaya')">🟠<br>KUNING<br>(Berbahaya)</div>
             </div>
         </div>
-        <button class="btn" onclick="finishGame()">Selesai Misi</button>
     </div>
 
     <!-- 5. HALAMAN AKHIR & REFLEKSI -->
-    <div id="screen-end" class="screen">
+    <div id="scr-end" class="screen">
         <h1>Bumi Tersenyum Kembali! 🌏❤️</h1>
-        <p><b>Alhamdulillah! Selamat Pahlawan <span class="name-display"></span>!</b></p>
-        <p>Kamu mengumpulkan: ⚔️ <b>5 Pedang Penjaga</b> & 💎 <b>10 Diamond Langka</b></p>
+        <p>Selamat Pahlawan <span class="lbl-name" style="color:#2e7d32;"></span>, Kamu Menyelesaikan Misi!</p>
         
-        <div class="rules-box" style="background: #e8f5e9; font-style: italic; text-align: center;">
-            "Menjaga kebersihan bumi adalah bukti rasa syukur dan keimanan kita kepada Tuhan. Terus pilah sampahmu di rumah dan sekolah ya!"
+        <div style="display: flex; gap: 30px; font-size: 1.3rem; font-weight: bold; color: #e65100; margin: 5px 0;">
+            <span>⚔️ <span id="res-swords">0</span> Pedang Penjaga</span>
+            <span>💎 <span id="res-diamonds">0</span> Diamond Langka</span>
+            <span>🏆 Skor Akhir: <span id="res-score">0</span></span>
+        </div>
+
+        <div class="info-card" style="background: #e8f5e9; border-color: #4caf50; color: #1b5e20; text-align: center; font-style: italic;">
+            "Alhamdulillah, segala puji bagi Tuhan. Menjaga kebersihan bumi adalah wujud nyata rasa syukur, keimanan, dan akhlak mulia kita terhadap alam ciptaan-Nya. Lingkungan yang bersih membuat bumi sehat dan kita pun hidup bahagia. Teruslah berperilaku peduli dengan memilah sampah di dunia nyata ya!"
         </div>
         
-        <h3>Leaderboard Kelas B:</h3>
-        <p>1. <span class="name-display"></span> - 300 Poin (Terbaru)<br>2. Ahmad - 280 Poin<br>3. Siti - 250 Poin</p>
+        <div class="leaderboard">
+            <div class="leaderboard-row" style="background: #c8e6c9; border-radius: 5px;"><span>Peringkat Kelas B</span> <span>Skor</span></div>
+            <div class="leaderboard-row" style="color: #e65100;"><span>1. <span class="lbl-name"></span> (Kamu)</span> <span><span id="lead-user-score">0</span></span></div>
+            <div class="leaderboard-row"><span>2. Ahmad Faiz</span> <span>240</span></div>
+            <div class="leaderboard-row"><span>3. Siti Aisyah</span> <span>210</span></div>
+        </div>
         
-        <p style="color: #4caf50; font-size: 0.85rem;">💾 <i>Data otomatis tersimpan ke Spreadsheet Guru KB Bina Insan.</i></p>
-        <button class="btn" onclick="resetGame()">Main Lagi</button>
+        <p style="font-size: 0.8rem; color: #4caf50; font-weight: normal;">💾 Data hasil belajar terkirim ke Google Spreadsheet Guru KB Bina Insan.</p>
+        <button class="btn-start" onclick="restartGame()">MAIN LAGI</button>
     </div>
+
+    <!-- GLOBAL FEEDBACK OVERLAY -->
+    <div id="feedback-overlay" class="feedback-overlay">
+        <h1 id="fb-title">Apresiasi!</h1>
+        <div id="fb-icon" style="font-size: 5rem; margin: 15px 0;"></div>
+        <p id="fb-text">Umpan balik edukasi...</p>
+        <button class="btn-action" id="fb-btn" onclick="closeFeedback()">LANJUT</button>
+    </div>
+
 </div>
 
 <script>
-    let pName = ""; let pClass = ""; let score = 0; let stars = 0;
+    // Game State Variables
+    let playerName = "";
+    let playerClass = "";
+    let globalScore = 0;
+    let globalStars = 0;
     
-    function startGame() {
-        pName = document.getElementById('player-name').value;
-        pClass = document.getElementById('player-class').value;
-        if(!pName) { alert("Tulis namamu dulu ya sayang!"); return; }
+    // Voice Over Function
+    function robotSpeak(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // Update HUD display text across screens
+    function updateHUD() {
+        document.querySelectorAll('.lbl-name').forEach(el => el.innerText = playerName);
+        document.querySelectorAll('.lbl-class').forEach(el => el.innerText = playerClass);
+        document.querySelectorAll('.lbl-score').forEach(el => el.innerText = globalScore);
+        document.querySelectorAll('.lbl-stars').forEach(el => el.innerText = globalStars);
+    }
+
+    // Switch Screen Utility
+    function changeScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        updateHUD();
+    }
+
+    // Custom Feedback Popup Changer
+    let postFeedbackAction = null;
+    function showFeedback(title, icon, text, audioText, buttonLabel, actionFunction) {
+        document.getElementById('fb-title').innerText = title;
+        document.getElementById('fb-icon').innerText = icon;
+        document.getElementById('fb-text').innerText = text;
+        document.getElementById('fb-btn').innerText = buttonLabel;
+        document.getElementById('feedback-overlay').style.display = 'flex';
+        robotSpeak(audioText);
+        postFeedbackAction = actionFunction;
+    }
+
+    function closeFeedback() {
+        document.getElementById('feedback-overlay').style.display = 'none';
+        if(postFeedbackAction) postFeedbackAction();
+    }
+
+    // ------------------- INITIALIZE HOME SCREEN -------------------
+    function initGame() {
+        playerName = document.getElementById('in-name').value.trim();
+        playerClass = document.getElementById('in-class').value;
         
-        document.querySelectorAll('.name-display').forEach(el => el.innerText = pName);
-        document.getElementById('screen-home').classList.remove('active');
-        document.getElementById('screen-lvl1').classList.add('active');
-        initLevel1();
-        // Play welcome audio mock
-        speak("Selamat datang di dunia petualangan Pahlawan Cilik!");
+        if (!playerName || !playerClass) {
+            alert("Halo Pahlawan! Tolong isi nama dan pilih kelasmu dulu ya agar data tersimpan di laptop Ibu Guru!");
+            return;
+        }
+        
+        let welcomeText = "Selamat datang di dunia petualangan Pahlawan Cilik Pemilah Sampah. Mari berpetualang bersama Pahlawan Cilik untuk menjaga bumi dengan memilah sampah.";
+        
+        showFeedback(
+            "Selamat Datang!", 
+            "🌍", 
+            welcomeText, 
+            welcomeText, 
+            "Ayo Berpetualang!", 
+            function() {
+                changeScreen('scr-lvl1');
+                startLevel1();
+            }
+        );
     }
 
-    function speak(text) { console.log("Voice Over: " + text); }
+    // ------------------- LEVEL 1 LOGIC (HAMALAN SEKOLAH) -------------------
+    let lvl1Step = 0;
+    const lvl1Questions = [
+        { q: "Nalar Numerasi: Ada banyak benda berserakan. Coba cari dan SENTUH (tap) objek daun kering yang merupakan sampah dari alam!", target: "🍂", wrongHint: "Itu botol plastik buatan manusia. Cari yang berasal dari pohon alami!" },
+        { q: "Nalar Kritis: Hebat! Sekarang mari temukan dan klik sampah plastik botol bekas yang bisa merusak tanah kita!", target: "🥤", wrongHint: "Bukan yang itu sayang, cari botol plastik wadah minuman!" },
+        { q: "Berpikir Komputasional: Luar biasa! Terakhir, pisahkan kaleng besi makanan yang tajam dan berbahaya ini!", target: "🥫", wrongHint: "Yuk cari objek kaleng minuman kaleng berwarna merah!" }
+    ];
 
-    function initLevel1() {
-        const area = document.getElementById('area-l1');
-        area.innerHTML = "";
-        let targetsHit = 0;
-        // Generate 3 botol (target) dan 2 daun (distraksi)
-        const items = [
-            {icon: '🥤', isTarget: true, x: 50, y: 80},
-            {icon: '🥤', isTarget: true, x: 300, y: 150},
-            {icon: '🥤', isTarget: true, x: 550, y: 220},
-            {icon: '🍂', isTarget: false, x: 180, y: 60},
-            {icon: '🍂', isTarget: false, x: 450, y: 130}
-        ];
-        items.forEach(item => {
-            let div = document.createElement('div');
-            div.className = 'trash-item';
-            div.innerHTML = item.icon;
-            div.style.left = item.x + 'px';
-            div.style.top = item.y + 'px';
-            div.onclick = () => {
-                if(item.isTarget) {
-                    score += 10; stars += 1;
-                    document.getElementById('score-l1').innerText = score;
-                    document.getElementById('stars-l1').innerText = stars;
-                    div.style.display = 'none';
-                    targetsHit++;
-                    showFeedback(true, "Hebat! Matamu jeli sekali, Pahlawan!");
-                    if(targetsHit === 3) {
-                        document.getElementById('reward-l1-box').style.display = 'block';
+    function startLevel1() {
+        if(lvl1Step < lvl1Questions.length) {
+            document.getElementById('l1-question').innerText = lvl1Questions[lvl1Step].q;
+            robotSpeak(lvl1Questions[lvl1Step].q);
+            
+            const zone = document.getElementById('l1-zone');
+            zone.innerHTML = "";
+            
+            // Spawn items randomly inside zone
+            let items = ["🍂", "🥤", "🥫", "🍏", "🧃"]; // Mixed pool
+            // Ensure target is present
+            items[0] = lvl1Questions[lvl1Step].target;
+            
+            // Random sort array
+            items.sort(() => Math.random() - 0.5);
+            
+            items.forEach((item, index) => {
+                let div = document.createElement('div');
+                div.className = 'interactive-item';
+                div.innerHTML = item;
+                div.style.left = (50 + index * 140) + "px";
+                div.style.top = (100 + Math.random() * 100) + "px";
+                
+                div.onclick = function() {
+                    if(item === lvl1Questions[lvl1Step].target) {
+                        globalScore += 50;
+                        globalStars += 1;
+                        lvl1Step++;
+                        showFeedback(
+                            "Benar! Kamu Hebat!", 
+                            "⭐", 
+                            "Wah pintar sekali analisismu! Kamu mendapatkan tambahan skor dan satu bintang baru.", 
+                            "Benar sekali, kamu hebat!", 
+                            "Pertanyaan Selanjutnya", 
+                            startLevel1
+                        );
+                    } else {
+                        showFeedback(
+                            "Ayo Coba Lagi", 
+                            "🤔", 
+                            lvl1Questions[lvl1Step].wrongHint, 
+                            "Ayo coba lagi cari objek yang tepat.", 
+                            "Coba Cari Lagi", 
+                            null
+                        );
                     }
-                } else {
-                    showFeedback(false, "Oh, itu daun kering dari alam. Yuk cari botol plastik buatan manusia!");
-                }
-            };
-            area.appendChild(div);
-        });
+                };
+                zone.appendChild(div);
+            });
+        } else {
+            // Level 1 Complete -> Go to Cloak Screen 1
+            changeScreen('scr-rew1');
+            robotSpeak("Hore! Level satu selesai! Klik jubah pahlawanmu untuk mengambilnya.");
+        }
     }
 
-    function showFeedback(isCorrect, msg) {
-        const fb = document.getElementById('feedback-l1');
-        fb.innerText = msg; fb.style.display = 'block';
-        fb.style.borderColor = isCorrect ? '#4caf50' : '#f44336';
-        setTimeout(() => { fb.style.display = 'none'; }, 3000);
+    function goToLevel2() {
+        changeScreen('scr-lvl2');
+        startLevel2();
     }
 
-    function nextLevel(lvl) {
-        document.getElementById('screen-lvl1').classList.remove('active');
-        document.getElementById('screen-lvl2').classList.remove('active');
-        document.getElementById('screen-lvl3').classList.remove('active');
-        document.getElementById('screen-lvl' + lvl).classList.add('active');
+    // ------------------- LEVEL 2 LOGIC (RUANG KELAS) -------------------
+    let lvl2Step = 0;
+    const lvl2Items = [
+        { icon: "🍌", name: "Kulit Pisang Sisa Makanan", type: "Organik", hint: "Kulit pisang berasal dari alam tanaman jadi dia termasuk Organik!" },
+        { icon: "📦", name: "Kardus Kotak Bekas Mainan", type: "Anorganik", hint: "Kardus buatan pabrik manusia yang kering, masuk kategori Anorganik!" },
+        { icon: "🔋", name: "Baterai Bekas Jam Dinding", type: "Berbahaya", hint: "Baterai mengandung racun kimia berbahaya bagi tanah, harus dipisah!" }
+    ];
+
+    function startLevel2() {
+        if(lvl2Step < lvl2Items.length) {
+            let item = lvl2Items[lvl2Step];
+            document.getElementById('l2-item-visual').innerText = item.icon;
+            document.getElementById('l2-item-name').innerText = item.name;
+            robotSpeak("Masuk kelompok manakah " + item.name + "?");
+        } else {
+            changeScreen('scr-rew2');
+            robotSpeak("Luar biasa, level dua bersih! Ambil jubah keduamu.");
+        }
     }
 
-    function triggerLevel2Win() {
-        document.getElementById('reward-l2-box').style.display = 'block';
+    function answerLevel2(selectedType) {
+        let currentItem = lvl2Items[lvl2Step];
+        if(selectedType === currentItem.type) {
+            globalScore += 50;
+            globalStars += 1;
+            lvl2Step++;
+            showFeedback(
+                "Tepat Sekali!", 
+                "👏", 
+                "Apresiasi untukmu! Pemahaman kategorisasimu sangat tepat. Bintang berhasil ditambahkan!", 
+                "Tepat sekali, jawabanmu benar!", 
+                "Sampah Berikutnya", 
+                startLevel2
+            );
+        } else {
+            showFeedback(
+                "Kurang Tepat", 
+                "💡 Tips Pahlawan", 
+                currentItem.hint, 
+                "Mari pahami kembali jenis sampah ini.", 
+                "Pilih Kategori Lagi", 
+                null
+            );
+        }
     }
 
-    function sortTrash(type) {
-        alert("Bagus! Sampah plastik berhasil dipilah ke Tong Biru!");
-        document.getElementById('active-trash').style.display = 'none';
+    function goToLevel3() {
+        changeScreen('scr-lvl3');
+        startLevel3();
     }
 
+    // ------------------- LEVEL 3 LOGIC (BANK SAMPAH) -------------------
+    let lvl3Step = 0;
+    const lvl3Items = [
+        { icon: "🍎", name: "Sisa Buah Apel", type: "Organik" },
+        { icon: "🛍️", name: "Kantong Plastik Kresek", type: "Anorganik" },
+        { icon: "💡", name: "Lampu Bohlam Rusak", type: "Berbahaya" }
+    ];
+
+    function startLevel3() {
+        if(lvl3Step < lvl3Items.length) {
+            let item = lvl3Items[lvl3Step];
+            document.getElementById('l3-current-trash').innerText = item.icon;
+            document.getElementById('l3-trash-text').innerText = item.name;
+            robotSpeak("Masukkan " + item.name + " ke tong warna yang benar.");
+        } else {
+            finishGame();
+        }
+    }
+
+    function answerLevel3(binType) {
+        let currentItem = lvl3Items[lvl3Step];
+        if(binType === currentItem.type) {
+            globalScore += 50;
+            globalStars += 1;
+            lvl3Step++;
+            showFeedback(
+                "Masuk Rumah yang Benar!", 
+                "♻️", 
+                "Hebat! Tempat sampah menjadi senang karena kamu membuang sampah sesuai dengan warna rumahnya.", 
+                "Hebat, masuk wadah yang benar!", 
+                "Ambil Sampah Lagi", 
+                startLevel3
+            );
+        } else {
+            let correctBinColor = currentItem.type === "Organik" ? "Hijau" : (currentItem.type === "Anorganik" ? "Biru" : "Kuning");
+            showFeedback(
+                "Salah Rumah!", 
+                "❌", 
+                `Ingat, objek ${currentItem.name} harusnya masuk ke tong warna ${correctBinColor}! Yuk coba klik tong warna yang benar.`, 
+                "Salah wadah sampah, ayo sesuaikan warnanya.", 
+                "Coba Masukkan Lagi", 
+                null
+            );
+        }
+    }
+
+    // ------------------- END GAME SCREEN -------------------
     function finishGame() {
-        document.getElementById('screen-lvl3').classList.remove('active');
-        document.getElementById('screen-end').classList.add('active');
-        // Mock save data ke spreadsheet guru
-        console.log(`Mengirim data ke Google Sheets... Peserta: ${pName}, Kelas: ${pClass}, Total Skor: ${score + 100}`);
+        // Calculations for final rewards
+        let swords = Math.floor(globalScore / 50);
+        let diamonds = globalStars;
+        
+        document.getElementById('res-swords').innerText = swords;
+        document.getElementById('res-diamonds').innerText = diamonds;
+        document.getElementById('res-score').innerText = globalScore;
+        document.getElementById('lead-user-score').innerText = globalScore;
+        
+        changeScreen('scr-end');
+        
+        let reflectionText = "Alhamdulillah, segala puji bagi Tuhan. Menjaga kebersihan bumi adalah wujud nyata rasa syukur, keimanan, dan akhlak mulia kita terhadap alam ciptaan-Nya. Selamat kamu telah sukses menyelesaikan seluruh misi penyelamatan!";
+        robotSpeak(reflectionText);
+        
+        // Mock API Logging to Teacher's Google Sheets
+        console.log("=== DATA DISIMPAN DI SPREADSHEET GURU ===");
+        console.log("Nama Murid    : " + playerName);
+        console.log("Kelas         : " + playerClass);
+        console.log("Total Skor    : " + globalScore);
+        console.log("Total Bintang : " + globalStars);
+        console.log("Reward Jubah  : 2 Jubah Diambil");
+        console.log("Pedang didapat: " + swords);
+        console.log("Diamond       : " + diamonds);
+        console.log("=========================================");
     }
 
-    function resetGame() {
-        score = 0; stars = 0;
-        document.getElementById('reward-l1-box').style.display = 'none';
-        document.getElementById('reward-l2-box').style.display = 'none';
-        document.getElementById('screen-end').classList.remove('active');
-        document.getElementById('screen-home').classList.add('active');
-        document.getElementById('player-name').value = "";
+    function restartGame() {
+        // Reset all variables
+        globalScore = 0;
+        globalStars = 0;
+        lvl1Step = 0;
+        lvl2Step = 0;
+        lvl3Step = 0;
+        document.getElementById('in-name').value = "";
+        document.getElementById('in-class').value = "";
+        changeScreen('scr-home');
     }
 </script>
+
 </body>
 </html>
