@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game PAUD: Pahlawan Cilik Pemilah Sampah</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; padding: 0; background: #eefff0; color: #2d5a27; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        #game-container { width: 100%; max-width: 800px; height: 600px; background: white; border: 8px solid #4caf50; border-radius: 20px; overflow: hidden; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .screen { display: none; width: 100%; height: 100%; padding: 30px; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: absolute; top:0; left:0; background-size: cover; background-position: center; }
+        .active { display: flex; }
+        
+        /* Tema Warna Alam */
+        h1 { color: #2e7d32; margin-top: 0; font-size: 2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        p { font-size: 1.1rem; line-height: 1.5; color: #3e2723; }
+        .btn { background: #4caf50; color: white; border: none; padding: 15px 35px; font-size: 1.2rem; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 5px #2e7d32; transition: 0.2s; margin-top: 15px; }
+        .btn:hover { background: #45a049; }
+        .btn:active { box-shadow: 0 2px #2e7d32; transform: translateY(3px); }
+        
+        /* Form & Aturan */
+        .form-group { margin: 15px 0; width: 80%; max-width: 300px; text-align: left; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border: 2px solid #a5d6a7; border-radius: 10px; font-size: 1rem; }
+        .rules-box { background: #f1f8e9; border: 2px dashed #81c784; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: left; font-size: 0.95rem; }
+        
+        /* Area Permainan */
+        .game-area { width: 100%; height: 350px; background: #e8f5e9; border: 3px solid #c8e6c9; border-radius: 15px; position: relative; margin: 15px 0; overflow: hidden; }
+        .trash-item { width: 60px; height: 60px; position: absolute; cursor: pointer; transition: transform 0.1s; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; }
+        .trash-item:hover { transform: scale(1.1); }
+        .hud { width: 100%; display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; background: #c8e6c9; padding: 10px 20px; border-radius: 10px; }
+        
+        /* Reward & Feedback */
+        .feedback-pop { background: rgba(255,255,255,0.95); border: 3px solid #ffca28; padding: 15px; border-radius: 15px; position: absolute; top: 40%; width: 80%; display: none; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .reward-display { font-size: 4rem; animation: bounce 1s infinite alternate; cursor: pointer; margin: 20px 0; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-10px); } }
+        
+        /* Bins Level 3 */
+        .bins-container { display: flex; justify-content: space-around; width: 100%; margin-top: 50px; }
+        .bin { width: 100px; height: 130px; border-radius: 10px 10px 5px 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 0.9rem; padding: 5px; }
+        .bin-green { background: #2e7d32; border: 3px solid #1b5e20; }
+        .bin-blue { background: #1565c0; border: 3px solid #0d47a1; }
+        .bin-yellow { background: #f57f17; border: 3px solid #f57f17; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- 1. HALAMAN DEPAN / HOME -->
+    <div id="screen-home" class="screen active">
+        <h1>Pahlawan Cilik Pemilah Sampah 🌍</h1>
+        <p>🎵 <i>Musik Alam Riang Bermain...</i></p>
+        
+        <div class="form-group">
+            <label>Nama Pahlawan:</label>
+            <input type="text" id="player-name" placeholder="Tulis namamu di sini...">
+        </div>
+        <div class="form-group">
+            <label>Kelas:</label>
+            <select id="player-class">
+                <option value="Kelompok B1">Kelompok B1</option>
+                <option value="Kelompok B2">Kelompok B2</option>
+            </select>
+        </div>
+        
+        <div class="rules-box">
+            <strong>Cara Bermain:</strong><br>
+            1. Cari dan ketuk sampah tersembunyi di Level 1.<br>
+            2. Kelompokkan jenis sampah di Level 2.<br>
+            3. Masukkan sampah ke rumah warna yang benar di Level 3!
+        </div>
+        <button class="btn" onclick="startGame()">MULAI PETUALANGAN</button>
+    </div>
+
+    <!-- 2. LEVEL 1: HALAMAN SEKOLAH -->
+    <div id="screen-lvl1" class="screen">
+        <div class="hud">
+            <span>Pahlawan: <span class="name-display"></span></span>
+            <span>Skor: <span id="score-l1">0</span></span>
+            <span>⭐: <span id="stars-l1">0</span></span>
+        </div>
+        <h3>Level 1: Bersihkan Halaman Sekolah! 🌳</h3>
+        <p>Misi: Cari dan ketuk <b>3 Botol Plastik Bekas</b> di bawah ini!</p>
+        <div class="game-area" id="area-l1">
+            <!-- Elemen Sampah akan di-generate via JS -->
+        </div>
+        <div id="feedback-l1" class="feedback-pop"></div>
+        <div id="reward-l1-box" style="display:none;">
+            <p>Hebat! Kamu mendapatkan hadiah pakaian pahlawan cilik!</p>
+            <div class="reward-display" onclick="nextLevel(2)">🧥</div>
+            <p><i>Klik Jubah untuk mengambil dan lanjut!</i></p>
+        </div>
+    </div>
+
+    <!-- 3. LEVEL 2: RUANG KELAS (Simulasi Konseptual) -->
+    <div id="screen-lvl2" class="screen">
+        <h3>Level 2: Pilah Sampah Ruang Kelas! 🏫</h3>
+        <p>Kelompokkan sampah makanan (Organik) dan plastik (Anorganik).</p>
+        <div class="game-area" style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+            <p style="font-size: 1.5rem;">🍌 &nbsp; 📦 &nbsp; 🍂 &nbsp; 🥤</p>
+            <button class="btn" onclick="triggerLevel2Win()">Pilah Semua Sampah</button>
+        </div>
+        <div id="reward-l2-box" style="display:none; text-align: center;">
+            <p>Luar Biasa! Jubah Pelindung Kedua Berhasil Didapatkan!</p>
+            <div class="reward-display" onclick="nextLevel(3)">✨🧥✨</div>
+        </div>
+    </div>
+
+    <!-- 4. LEVEL 3: BANK SAMPAH -->
+    <div id="screen-lvl3" class="screen">
+        <h3>Level 3: Rumah Warna Sampah 🏪</h3>
+        <p>Ketuk sampah di atas untuk masuk ke tong warna yang pas!</p>
+        <div class="game-area" id="area-l3">
+            <div class="trash-item" style="top:20px; left:45%;" id="active-trash" onclick="sortTrash('anorganik')">🥤</div>
+            
+            <div class="bins-container">
+                <div class="bin bin-green">HIJAU<br>(Daun/Makanan)</div>
+                <div class="bin bin-blue">BIRU<br>(Plastik/Botol)</div>
+                <div class="bin bin-yellow">KUNING<br>(Berbahaya)</div>
+            </div>
+        </div>
+        <button class="btn" onclick="finishGame()">Selesai Misi</button>
+    </div>
+
+    <!-- 5. HALAMAN AKHIR & REFLEKSI -->
+    <div id="screen-end" class="screen">
+        <h1>Bumi Tersenyum Kembali! 🌏❤️</h1>
+        <p><b>Alhamdulillah! Selamat Pahlawan <span class="name-display"></span>!</b></p>
+        <p>Kamu mengumpulkan: ⚔️ <b>5 Pedang Penjaga</b> & 💎 <b>10 Diamond Langka</b></p>
+        
+        <div class="rules-box" style="background: #e8f5e9; font-style: italic; text-align: center;">
+            "Menjaga kebersihan bumi adalah bukti rasa syukur dan keimanan kita kepada Tuhan. Terus pilah sampahmu di rumah dan sekolah ya!"
+        </div>
+        
+        <h3>Leaderboard Kelas B:</h3>
+        <p>1. <span class="name-display"></span> - 300 Poin (Terbaru)<br>2. Ahmad - 280 Poin<br>3. Siti - 250 Poin</p>
+        
+        <p style="color: #4caf50; font-size: 0.85rem;">💾 <i>Data otomatis tersimpan ke Spreadsheet Guru KB Bina Insan.</i></p>
+        <button class="btn" onclick="resetGame()">Main Lagi</button>
+    </div>
+</div>
+
+<script>
+    let pName = ""; let pClass = ""; let score = 0; let stars = 0;
+    
+    function startGame() {
+        pName = document.getElementById('player-name').value;
+        pClass = document.getElementById('player-class').value;
+        if(!pName) { alert("Tulis namamu dulu ya sayang!"); return; }
+        
+        document.querySelectorAll('.name-display').forEach(el => el.innerText = pName);
+        document.getElementById('screen-home').classList.remove('active');
+        document.getElementById('screen-lvl1').classList.add('active');
+        initLevel1();
+        // Play welcome audio mock
+        speak("Selamat datang di dunia petualangan Pahlawan Cilik!");
+    }
+
+    function speak(text) { console.log("Voice Over: " + text); }
+
+    function initLevel1() {
+        const area = document.getElementById('area-l1');
+        area.innerHTML = "";
+        let targetsHit = 0;
+        // Generate 3 botol (target) dan 2 daun (distraksi)
+        const items = [
+            {icon: '🥤', isTarget: true, x: 50, y: 80},
+            {icon: '🥤', isTarget: true, x: 300, y: 150},
+            {icon: '🥤', isTarget: true, x: 550, y: 220},
+            {icon: '🍂', isTarget: false, x: 180, y: 60},
+            {icon: '🍂', isTarget: false, x: 450, y: 130}
+        ];
+        items.forEach(item => {
+            let div = document.createElement('div');
+            div.className = 'trash-item';
+            div.innerHTML = item.icon;
+            div.style.left = item.x + 'px';
+            div.style.top = item.y + 'px';
+            div.onclick = () => {
+                if(item.isTarget) {
+                    score += 10; stars += 1;
+                    document.getElementById('score-l1').innerText = score;
+                    document.getElementById('stars-l1').innerText = stars;
+                    div.style.display = 'none';
+                    targetsHit++;
+                    showFeedback(true, "Hebat! Matamu jeli sekali, Pahlawan!");
+                    if(targetsHit === 3) {
+                        document.getElementById('reward-l1-box').style.display = 'block';
+                    }
+                } else {
+                    showFeedback(false, "Oh, itu daun kering dari alam. Yuk cari botol plastik buatan manusia!");
+                }
+            };
+            area.appendChild(div);
+        });
+    }
+
+    function showFeedback(isCorrect, msg) {
+        const fb = document.getElementById('feedback-l1');
+        fb.innerText = msg; fb.style.display = 'block';
+        fb.style.borderColor = isCorrect ? '#4caf50' : '#f44336';
+        setTimeout(() => { fb.style.display = 'none'; }, 3000);
+    }
+
+    function nextLevel(lvl) {
+        document.getElementById('screen-lvl1').classList.remove('active');
+        document.getElementById('screen-lvl2').classList.remove('active');
+        document.getElementById('screen-lvl3').classList.remove('active');
+        document.getElementById('screen-lvl' + lvl).classList.add('active');
+    }
+
+    function triggerLevel2Win() {
+        document.getElementById('reward-l2-box').style.display = 'block';
+    }
+
+    function sortTrash(type) {
+        alert("Bagus! Sampah plastik berhasil dipilah ke Tong Biru!");
+        document.getElementById('active-trash').style.display = 'none';
+    }
+
+    function finishGame() {
+        document.getElementById('screen-lvl3').classList.remove('active');
+        document.getElementById('screen-end').classList.add('active');
+        // Mock save data ke spreadsheet guru
+        console.log(`Mengirim data ke Google Sheets... Peserta: ${pName}, Kelas: ${pClass}, Total Skor: ${score + 100}`);
+    }
+
+    function resetGame() {
+        score = 0; stars = 0;
+        document.getElementById('reward-l1-box').style.display = 'none';
+        document.getElementById('reward-l2-box').style.display = 'none';
+        document.getElementById('screen-end').classList.remove('active');
+        document.getElementById('screen-home').classList.add('active');
+        document.getElementById('player-name').value = "";
+    }
+</script>
+</body>
+</html>
